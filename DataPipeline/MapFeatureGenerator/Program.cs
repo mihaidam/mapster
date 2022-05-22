@@ -125,26 +125,33 @@ public static class Program
                 MapFeatureData.PropertiesValueStruct propertiesValueStruct;
                 foreach (var tag in way.Tags)
                 {
-                    if (tag.Key == "name")
+
+                    if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(tag.Key, out convertedKey))
                     {
-                        labels[^1] = totalPropertyCount * 2 + featureData.PropertyKeys.keys.Count * 2 + 1;
-                    }
-                    else
-                    {
-                        if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(tag.Key, out convertedKey))
-                        {
-                            featureData.PropertyKeys.keys.Add(convertedKey);
-                        }
+                        featureData.PropertyKeys.keys.Add(convertedKey);
 
                         if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(tag.Value, out convertedValue))
                         {
                             propertiesValueStruct.PropertiesValues = convertedValue;
+                            propertiesValueStruct.name = "";
                             featureData.PropertyValues.values.Add(propertiesValueStruct);
                         }
                         else if (tag.Value == "2")
                         {
                             propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two;
+                            propertiesValueStruct.name = "";
                             featureData.PropertyValues.values.Add(propertiesValueStruct);
+                        }
+                        else if (convertedKey == MapFeatureData.PropertiesKeysEnum.name)
+                        {
+                            labels[^1] = totalPropertyCount * 2 + featureData.PropertyKeys.keys.Count * 2 + 1;
+                            propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.none;
+                            propertiesValueStruct.name = tag.Value;
+                            featureData.PropertyValues.values.Add(propertiesValueStruct);
+                        }
+                        else
+                        {
+                            featureData.PropertyKeys.keys.RemoveAt(featureData.PropertyKeys.keys.Count - 1);
                         }
                     }
                 }
@@ -157,21 +164,26 @@ public static class Program
                     foreach (var (key, value) in node.Tags)
                     {
                         if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(key, out convertedKey))
-                            if (!featureData.PropertyKeys.keys.Contains(convertedKey))
+                        {
+                            featureData.PropertyKeys.keys.Add(convertedKey);
+
+                            if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(value, out convertedValue))
                             {
-
-                                featureData.PropertyKeys.keys.Add(convertedKey);
-
-                                if (Enum.TryParse<MapFeatureData.PropertiesValuesEnum>(value, out convertedValue))
-                                {
-                                    featureData.PropertyValues.values.Add((int)convertedValue);
-                                }
-                                else if (value == "2")
-                                {
-                                    featureData.PropertyValues.values.Add((int)MapFeatureData.PropertiesValuesEnum.two);
-                                }
-
+                                propertiesValueStruct.PropertiesValues = convertedValue;
+                                propertiesValueStruct.name = "";
+                                featureData.PropertyValues.values.Add(propertiesValueStruct);
                             }
+                            else if (value == "2")
+                            {
+                                propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two;
+                                propertiesValueStruct.name = "";
+                                featureData.PropertyValues.values.Add(propertiesValueStruct);
+                            }
+                            else
+                            {
+                                featureData.PropertyKeys.keys.RemoveAt(featureData.PropertyKeys.keys.Count - 1);
+                            }
+                        }
                     }
 
                     featureData.Coordinates.coordinates.Add(new Coordinate(node.Latitude, node.Longitude));
@@ -198,32 +210,44 @@ public static class Program
             {
                 featureIds.Add(nodeId);
 
-                var featurePropKeys = new List<MapFeatureData.PropertiesKeysEnum> ();
-                var featurePropValues = new List<int>();
+                var featurePropKeys = new List<MapFeatureData.PropertiesKeysEnum>();
+                var featurePropValues = new List<MapFeatureData.PropertiesValueStruct>();
 
                 labels.Add(-1);
                 MapFeatureData.PropertiesKeysEnum convertedKey;
-                MapFeatureData.PropertiesValuesEnum convertedValue;
+                MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum convertedValue;
+                MapFeatureData.PropertiesValueStruct propertiesValueStruct;
                 for (var i = 0; i < node.Tags.Count; ++i)
                 {
                     var tag = node.Tags[i];
-                    if (tag.Key == "name")
-                    {
-                        labels[^1] = totalPropertyCount * 2 + featurePropKeys.Count * 2 + 1;
-                    }
 
                     if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(tag.Key, out convertedKey))
                     {
                         featurePropKeys.Add(convertedKey);
-                    }
 
-                    if (Enum.TryParse<MapFeatureData.PropertiesValuesEnum>(tag.Value, out convertedValue))
-                    {
-                        featurePropValues.Add((int)convertedValue);
-                    }
-                    else if (tag.Value == "2")
-                    {
-                        featurePropValues.Add((int)MapFeatureData.PropertiesValuesEnum.two);
+                        if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(tag.Value, out convertedValue))
+                        {
+                            propertiesValueStruct.PropertiesValues = convertedValue;
+                            propertiesValueStruct.name = "";
+                            featurePropValues.Add(propertiesValueStruct);
+                        }
+                        else if (tag.Value == "2")
+                        {
+                            propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two;
+                            propertiesValueStruct.name = "";
+                            featurePropValues.Add(propertiesValueStruct);
+                        }
+                        else if (convertedKey == MapFeatureData.PropertiesKeysEnum.name)
+                        {
+                            labels[^1] = totalPropertyCount * 2 + featurePropKeys.Count * 2 + 1;
+                            propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.none;
+                            propertiesValueStruct.name = tag.Value;
+                            featurePropValues.Add(propertiesValueStruct);
+                        }
+                        else
+                        {
+                            featurePropKeys.RemoveAt(featurePropKeys.Count - 1);
+                        }
                     }
                 }
 

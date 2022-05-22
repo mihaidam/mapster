@@ -31,7 +31,13 @@ public readonly ref struct MapFeatureData
         boundary = 2,
         admin_level = 3,
         name = 4,
-        highway = 5
+        highway = 5,
+        water = 6,
+        railway = 7,
+        landuse = 8,
+        building = 9,
+        leisure = 10,
+        amenity = 11
     }
     public struct PropertiesValueStruct
     {
@@ -56,7 +62,35 @@ public readonly ref struct MapFeatureData
             locality = 5,
             hamlet = 5,
             administrative = 6,
-            two = 7
+            two = 7,
+            motorway = 8,
+            trunk = 8,
+            primary = 8,
+            secondary = 8,
+            tertiary = 8,
+            unclassified = 8,
+            road = 8,
+            forest = 9,
+            orchard = 9,
+            residential = 10,
+            cemetery = 10,
+            industrial = 10,
+            commercial = 10,
+            square = 10,
+            construction = 10,
+            military = 10,
+            quarry = 10,
+            brownfield = 10,
+            farm = 11,
+            meadow = 11,
+            grass = 11,
+            greenfield = 11,
+            recreation_ground = 11,
+            winter_sports = 11,
+            allotments = 11,
+            reservoir = 12,
+            basin = 12,
+            none = 1000
         };
 
         public PropertiesValuesEnum PropertiesValues;
@@ -218,26 +252,29 @@ public unsafe class DataFile : IDisposable
                     GetString(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, feature->LabelOffset, out label);
                 }
 
+                MapFeatureData.PropertiesValueStruct propertiesValueStruct;
                 if (isFeatureInBBox)
                 {
-                    var properties = new Dictionary<MapFeatureData.PropertiesKeysEnum, int>(feature->PropertyCount);
+                    var properties = new Dictionary<MapFeatureData.PropertiesKeysEnum, MapFeatureData.PropertiesValueStruct>(feature->PropertyCount);
                     for (var p = 0; p < feature->PropertyCount; ++p)
                     {
                         GetProperty(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, p * 2 + feature->PropertiesOffset, out var key, out var value);
+
                         if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(key, out var convertedKey))
                         {
-                            if (Enum.TryParse<MapFeatureData.PropertiesValuesEnum>(value, out var convertedValue))
+                            if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(value, out var convertedValue))
                             {
-                                properties.Add(convertedKey, (int)convertedValue);
+                                propertiesValueStruct.PropertiesValues = convertedValue;
+                                propertiesValueStruct.name = "";
+                                properties.Add(convertedKey, propertiesValueStruct);
                             }
                             else if (value == "2")
                             {
-                                properties.Add(convertedKey, (int)MapFeatureData.PropertiesValuesEnum.two);
+                                propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two;
+                                propertiesValueStruct.name = "";
+                                properties.Add(convertedKey, propertiesValueStruct);
                             }
                         }
-
-                        
-                        
                     }
 
                     if (!action(new MapFeatureData
