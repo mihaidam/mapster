@@ -24,7 +24,46 @@ public readonly ref struct MapFeatureData
     public GeometryType Type { get; init; }
     public ReadOnlySpan<char> Label { get; init; }
     public ReadOnlySpan<Coordinate> Coordinates { get; init; }
-    public Dictionary<string, string> Properties { get; init; }
+    public enum PropertiesKeysEnum
+    {
+        natural = 0,
+        place = 1,
+        boundary = 2,
+        admin_level = 3,
+        name = 4,
+        highway = 5
+    }
+    public struct PropertiesValueStruct
+    {
+        public enum PropertiesValuesEnum
+        {
+            fell = 0,
+            grassland = 0,
+            heath = 0,
+            moor = 0,
+            scrub = 0,
+            wetland = 0,
+            wood = 1,
+            tree_row = 1,
+            bare_rock = 2,
+            rock = 2,
+            scree = 2,
+            beach = 3,
+            sand = 3,
+            water = 4,
+            city = 5,
+            town = 5,
+            locality = 5,
+            hamlet = 5,
+            administrative = 6,
+            two = 7
+        };
+
+        public PropertiesValuesEnum PropertiesValues;
+
+        public String name;
+    }
+    public Dictionary<PropertiesKeysEnum, PropertiesValueStruct> Properties { get; init; }
 }
 
 /// <summary>
@@ -181,11 +220,24 @@ public unsafe class DataFile : IDisposable
 
                 if (isFeatureInBBox)
                 {
-                    var properties = new Dictionary<string, string>(feature->PropertyCount);
+                    var properties = new Dictionary<MapFeatureData.PropertiesKeysEnum, int>(feature->PropertyCount);
                     for (var p = 0; p < feature->PropertyCount; ++p)
                     {
                         GetProperty(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, p * 2 + feature->PropertiesOffset, out var key, out var value);
-                        properties.Add(key.ToString(), value.ToString());
+                        if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(key, out var convertedKey))
+                        {
+                            if (Enum.TryParse<MapFeatureData.PropertiesValuesEnum>(value, out var convertedValue))
+                            {
+                                properties.Add(convertedKey, (int)convertedValue);
+                            }
+                            else if (value == "2")
+                            {
+                                properties.Add(convertedKey, (int)MapFeatureData.PropertiesValuesEnum.two);
+                            }
+                        }
+
+                        
+                        
                     }
 
                     if (!action(new MapFeatureData

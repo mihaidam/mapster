@@ -75,8 +75,9 @@ public static class Program
         // var coordinates = new List<(long id, (int offset, List<Coordinate> coordinates) values)>();
 
         var labels = new List<int>();
-        // var propKeys = new List<(long id, (int offset, IEnumerable<string> keys) values)>();
-        // var propValues = new List<(long id, (int offset, IEnumerable<string> values) values)>();
+        // cut from here
+        //var propKeys = new List<(long id, (int offset, IEnumerable<string> keys) values)>();
+        //var propValues = new List<(long id, (int offset, IEnumerable<string> values) values)>();
 
         using var fileWriter = new BinaryWriter(File.OpenWrite(filePath));
         var offsets = new Dictionary<int, long>(mapData.Tiles.Count);
@@ -110,22 +111,42 @@ public static class Program
                 {
                     Id = way.Id,
                     Coordinates = (totalCoordinateCount, new List<Coordinate>()),
-                    PropertyKeys = (totalPropertyCount, new List<string>(way.Tags.Count)),
-                    PropertyValues = (totalPropertyCount, new List<string>(way.Tags.Count))
+                    PropertyKeys = (totalPropertyCount, new List<MapFeatureData.PropertiesKeysEnum>(way.Tags.Count)),
+                    PropertyValues = (totalPropertyCount, new List<MapFeatureData.PropertiesValueStruct>(way.Tags.Count))
                 };
 
                 featureIds.Add(way.Id);
                 var geometryType = GeometryType.Polyline;
 
                 labels.Add(-1);
+
+                MapFeatureData.PropertiesKeysEnum convertedKey;
+                MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum convertedValue;
+                MapFeatureData.PropertiesValueStruct propertiesValueStruct;
                 foreach (var tag in way.Tags)
                 {
                     if (tag.Key == "name")
                     {
                         labels[^1] = totalPropertyCount * 2 + featureData.PropertyKeys.keys.Count * 2 + 1;
                     }
-                    featureData.PropertyKeys.keys.Add(tag.Key);
-                    featureData.PropertyValues.values.Add(tag.Value);
+                    else
+                    {
+                        if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(tag.Key, out convertedKey))
+                        {
+                            featureData.PropertyKeys.keys.Add(convertedKey);
+                        }
+
+                        if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(tag.Value, out convertedValue))
+                        {
+                            propertiesValueStruct.PropertiesValues = convertedValue;
+                            featureData.PropertyValues.values.Add(propertiesValueStruct);
+                        }
+                        else if (tag.Value == "2")
+                        {
+                            propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two;
+                            featureData.PropertyValues.values.Add(propertiesValueStruct);
+                        }
+                    }
                 }
 
                 foreach (var nodeId in way.NodeIds)
@@ -135,11 +156,22 @@ public static class Program
 
                     foreach (var (key, value) in node.Tags)
                     {
-                        if (!featureData.PropertyKeys.keys.Contains(key))
-                        {
-                            featureData.PropertyKeys.keys.Add(key);
-                            featureData.PropertyValues.values.Add(value);
-                        }
+                        if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(key, out convertedKey))
+                            if (!featureData.PropertyKeys.keys.Contains(convertedKey))
+                            {
+
+                                featureData.PropertyKeys.keys.Add(convertedKey);
+
+                                if (Enum.TryParse<MapFeatureData.PropertiesValuesEnum>(value, out convertedValue))
+                                {
+                                    featureData.PropertyValues.values.Add((int)convertedValue);
+                                }
+                                else if (value == "2")
+                                {
+                                    featureData.PropertyValues.values.Add((int)MapFeatureData.PropertiesValuesEnum.two);
+                                }
+
+                            }
                     }
 
                     featureData.Coordinates.coordinates.Add(new Coordinate(node.Latitude, node.Longitude));
@@ -166,10 +198,12 @@ public static class Program
             {
                 featureIds.Add(nodeId);
 
-                var featurePropKeys = new List<string>();
-                var featurePropValues = new List<string>();
+                var featurePropKeys = new List<MapFeatureData.PropertiesKeysEnum> ();
+                var featurePropValues = new List<int>();
 
                 labels.Add(-1);
+                MapFeatureData.PropertiesKeysEnum convertedKey;
+                MapFeatureData.PropertiesValuesEnum convertedValue;
                 for (var i = 0; i < node.Tags.Count; ++i)
                 {
                     var tag = node.Tags[i];
@@ -178,8 +212,19 @@ public static class Program
                         labels[^1] = totalPropertyCount * 2 + featurePropKeys.Count * 2 + 1;
                     }
 
-                    featurePropKeys.Add(tag.Key);
-                    featurePropValues.Add(tag.Value);
+                    if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(tag.Key, out convertedKey))
+                    {
+                        featurePropKeys.Add(convertedKey);
+                    }
+
+                    if (Enum.TryParse<MapFeatureData.PropertiesValuesEnum>(tag.Value, out convertedValue))
+                    {
+                        featurePropValues.Add((int)convertedValue);
+                    }
+                    else if (tag.Value == "2")
+                    {
+                        featurePropValues.Add((int)MapFeatureData.PropertiesValuesEnum.two);
+                    }
                 }
 
                 if (featurePropKeys.Count != featurePropValues.Count)
@@ -274,8 +319,8 @@ public static class Program
                 var featureData = featuresData[t];
                 for (var i = 0; i < featureData.PropertyKeys.keys.Count; ++i)
                 {
-                    ReadOnlySpan<char> k = featureData.PropertyKeys.keys[i];
-                    ReadOnlySpan<char> v = featureData.PropertyValues.values[i];
+                    ReadOnlySpan<char> k = Convert.ToString(featureData.PropertyKeys.keys[i]);
+                    ReadOnlySpan<char> v = Convert.ToString(featureData.PropertyValues.values[i]);
 
                     fileWriter.Write(stringOffset); // StringEntry: Offset
                     fileWriter.Write(k.Length); // StringEntry: Length
@@ -300,13 +345,13 @@ public static class Program
                 var featureData = featuresData[t];
                 for (var i = 0; i < featureData.PropertyKeys.keys.Count; ++i)
                 {
-                    ReadOnlySpan<char> k = featureData.PropertyKeys.keys[i];
+                    ReadOnlySpan<char> k = Convert.ToString(featureData.PropertyKeys.keys[i]);
                     foreach (var c in k)
                     {
                         fileWriter.Write((short)c);
                     }
 
-                    ReadOnlySpan<char> v = featureData.PropertyValues.values[i];
+                    ReadOnlySpan<char> v = Convert.ToString(featureData.PropertyValues.values[i]);
                     foreach (var c in v)
                     {
                         fileWriter.Write((short)c);
@@ -363,7 +408,7 @@ public static class Program
 
         public byte GeometryType { get; set; }
         public (int offset, List<Coordinate> coordinates) Coordinates { get; init; }
-        public (int offset, List<string> keys) PropertyKeys { get; init; }
-        public (int offset, List<string> values) PropertyValues { get; init; }
+        public (int offset, List<MapFeatureData.PropertiesKeysEnum> keys) PropertyKeys { get; init; }
+        public (int offset, List<MapFeatureData.PropertiesValueStruct> values) PropertyValues { get; init; }
     }
 }

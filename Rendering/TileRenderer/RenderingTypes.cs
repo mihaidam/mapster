@@ -108,40 +108,40 @@ public struct GeoFeature : BaseShape
     public GeoFeature(ReadOnlySpan<Coordinate> c, MapFeatureData feature)
     {
         IsPolygon = feature.Type == GeometryType.Polygon;
-        var naturalKey = feature.Properties.FirstOrDefault(x => x.Key == "natural").Value;
+        var naturalKey = feature.Properties.FirstOrDefault(x => x.Key == MapFeatureData.PropertiesKeysEnum.natural).Value;
         Type = GeoFeatureType.Unknown;
-        if (naturalKey != null)
-        {
-            if (naturalKey == "fell" ||
-                naturalKey == "grassland" ||
-                naturalKey == "heath" ||
-                naturalKey == "moor" ||
-                naturalKey == "scrub" ||
-                naturalKey == "wetland")
+        //if (naturalKey != null)
+        //{
+            if (naturalKey == (int)MapFeatureData.PropertiesValuesEnum.fell ||
+                naturalKey == (int)MapFeatureData.PropertiesValuesEnum.grassland ||
+                naturalKey == (int)MapFeatureData.PropertiesValuesEnum.heath ||
+                naturalKey == (int)MapFeatureData.PropertiesValuesEnum.moor ||
+                naturalKey == (int)MapFeatureData.PropertiesValuesEnum.scrub ||
+                naturalKey == (int)MapFeatureData.PropertiesValuesEnum.scree)
             {
                 Type = GeoFeatureType.Plain;
             }
-            else if (naturalKey == "wood" ||
-                     naturalKey == "tree_row")
+            else if (naturalKey == (int)MapFeatureData.PropertiesValuesEnum.wood ||
+                     naturalKey == (int)MapFeatureData.PropertiesValuesEnum.tree_row)
             {
                 Type = GeoFeatureType.Forest;
             }
-            else if (naturalKey == "bare_rock" ||
-                     naturalKey == "rock" ||
-                     naturalKey == "scree")
+            else if (naturalKey == (int)MapFeatureData.PropertiesValuesEnum.bare_rock||
+                     naturalKey == (int)MapFeatureData.PropertiesValuesEnum.rock ||
+                     naturalKey == (int)MapFeatureData.PropertiesValuesEnum.scree)
             {
                 Type = GeoFeatureType.Mountains;
             }
-            else if (naturalKey == "beach" ||
-                     naturalKey == "sand")
+            else if (naturalKey == (int)MapFeatureData.PropertiesValuesEnum.beach ||
+                     naturalKey == (int)MapFeatureData.PropertiesValuesEnum.sand)
             {
                 Type = GeoFeatureType.Desert;
             }
-            else if (naturalKey == "water")
+            else if (naturalKey == (int)MapFeatureData.PropertiesValuesEnum.water)
             {
                 Type = GeoFeatureType.Water;
             }
-        }
+        //}
 
         ScreenCoordinates = new PointF[c.Length];
         for (var i = 0; i < c.Length; i++)

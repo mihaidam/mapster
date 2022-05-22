@@ -13,7 +13,7 @@ public static class TileRenderer
         BaseShape? baseShape = null;
 
         var featureType = feature.Type;
-        if (feature.Properties.Any(p => p.Key == "highway" && MapFeature.HighwayTypes.Any(v => p.Value.StartsWith(v))))
+        if (feature.Properties.Any(p => p.Key == MapFeatureData.PropertiesKeysEnum.highway && MapFeature.HighwayTypes.Any(v => p.Value.StartsWith(v))))
         {
             var coordinates = feature.Coordinates;
             var road = new Road(coordinates);
