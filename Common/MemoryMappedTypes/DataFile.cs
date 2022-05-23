@@ -254,7 +254,7 @@ public unsafe class DataFile : IDisposable
                     GetString(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, feature->LabelOffset, out label);
                 }
 
-                MapFeatureData.PropertiesValueStruct propertiesValueStruct;
+                MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct();
                 if (isFeatureInBBox)
                 {
                     var properties = new Dictionary<MapFeatureData.PropertiesKeysEnum, MapFeatureData.PropertiesValueStruct>(feature->PropertyCount);
@@ -262,10 +262,16 @@ public unsafe class DataFile : IDisposable
                     {
                         GetProperty(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, p * 2 + feature->PropertiesOffset, out var key, out var value);
 
+                        Console.Write(key.ToString() + "-v-");
+                        Enum.TryParse(value.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
+                        if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+                            Console.WriteLine(myStatus);
+
                         if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(key, out var convertedKey))
                         {
                             if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(value, out var convertedValue))
                             {
+                                Console.Write((int)convertedValue + '\n');
                                 propertiesValueStruct.PropertiesValues = convertedValue;
                                 propertiesValueStruct.name = "";
                                 properties.Add(convertedKey, propertiesValueStruct);
@@ -276,6 +282,18 @@ public unsafe class DataFile : IDisposable
                                 propertiesValueStruct.name = "";
                                 properties.Add(convertedKey, propertiesValueStruct);
                             }
+                            else if (value == "name")
+                            {
+                                propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.none;
+                                propertiesValueStruct.name = value.ToString();
+                                properties.Add(convertedKey, propertiesValueStruct);
+                            }
+                            //else
+                            //{
+                            //    Enum.TryParse(value.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
+                            //    if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+                            //        Console.WriteLine(myStatus);
+                            //}
                         }
                     }
 

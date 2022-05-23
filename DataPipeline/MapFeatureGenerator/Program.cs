@@ -122,7 +122,7 @@ public static class Program
 
                 MapFeatureData.PropertiesKeysEnum convertedKey;
                 MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum convertedValue;
-                MapFeatureData.PropertiesValueStruct propertiesValueStruct;
+                MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct();
 
                 var addedKey = true;
                 foreach (var tag in way.Tags)
@@ -228,13 +228,14 @@ public static class Program
                             propertiesValueStruct.name = "";
                             featureData.PropertyValues.values.Add(propertiesValueStruct);
                         }
-                        else if (tag.Value.StartsWith("motorway") || tag.Value.StartsWith("trunk") || tag.Value.StartsWith("primary") || 
+                        else if (tag.Value.StartsWith("motorway") || tag.Value.StartsWith("trunk") || tag.Value.StartsWith("primary") ||
                             tag.Value.StartsWith("secondary") || tag.Value.StartsWith("tertiary") || tag.Value.StartsWith("road") || tag.Value.StartsWith("path") ||
                             tag.Value.StartsWith("service") || tag.Value.StartsWith("footway") || tag.Value.StartsWith("track") || tag.Value.StartsWith("steps"))
                         {
                             propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.motorway;
                             propertiesValueStruct.name = "";
                             featureData.PropertyValues.values.Add(propertiesValueStruct);
+
                         }
                         else if (tag.Value.StartsWith("forest"))
                         {
@@ -306,6 +307,14 @@ public static class Program
                         //    propertiesValueStruct.name = "";
                         //    featureData.PropertyValues.values.Add(propertiesValueStruct);
                         //}
+                    }
+                    foreach (var val in featureData.PropertyValues.values)
+                    {
+                        Enum.TryParse(val.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
+                        if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+                            Console.WriteLine("---" + myStatus.ToString());
+                        else
+                            Console.WriteLine("---" + (int)myStatus);
                     }
                 }
 
@@ -517,6 +526,21 @@ public static class Program
                 featuresData.Add(way.Id, featureData);
             }
 
+            //foreach (var t in featureIds)
+            //{
+            //    var featureData = featuresData[t];
+            //    for (var i = 0; i < featureData.PropertyKeys.keys.Count; ++i)
+            //    {
+            //        ReadOnlySpan<char> k = Convert.ToString(featureData.PropertyKeys.keys[i]);
+            //        ReadOnlySpan<char> v = Convert.ToString(featureData.PropertyValues.values[i]);
+
+            //        Enum.TryParse(v.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
+            //        if (myStatus == MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+            //            Console.WriteLine(k.ToString() + "---" + myStatus.ToString());
+            //    }
+            //}
+
+
             foreach (var (nodeId, node) in mapData.Nodes.Where(n => !usedNodes.Contains(n.Key)))
             {
                 featureIds.Add(nodeId);
@@ -527,7 +551,7 @@ public static class Program
                 labels.Add(-1);
                 MapFeatureData.PropertiesKeysEnum convertedKey;
                 MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum convertedValue;
-                MapFeatureData.PropertiesValueStruct propertiesValueStruct;
+                MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct();
 
                 var addedKey = true;
 
@@ -810,6 +834,10 @@ public static class Program
                 {
                     ReadOnlySpan<char> k = Convert.ToString(featureData.PropertyKeys.keys[i]);
                     ReadOnlySpan<char> v = Convert.ToString(featureData.PropertyValues.values[i]);
+
+                    Enum.TryParse(v.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
+                    if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+                        Console.WriteLine(k.ToString() + "---" + myStatus.ToString());
 
                     fileWriter.Write(stringOffset); // StringEntry: Offset
                     fileWriter.Write(k.Length); // StringEntry: Length
