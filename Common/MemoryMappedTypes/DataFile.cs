@@ -95,9 +95,15 @@ public readonly ref struct MapFeatureData
             none = 1000
         };
 
-        public PropertiesValuesEnum PropertiesValues;
+        public PropertiesValuesEnum PropertiesValues { get; private set; }
 
-        public String name;
+        public String name { get; private set; }
+
+        public PropertiesValueStruct(PropertiesValuesEnum prop, String name) : this()
+        {
+            this.PropertiesValues = prop;
+            this.name = name;
+        }
     }
     public Dictionary<PropertiesKeysEnum, PropertiesValueStruct> Properties { get; init; }
 }
@@ -254,7 +260,6 @@ public unsafe class DataFile : IDisposable
                     GetString(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, feature->LabelOffset, out label);
                 }
 
-                MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct();
                 if (isFeatureInBBox)
                 {
                     var properties = new Dictionary<MapFeatureData.PropertiesKeysEnum, MapFeatureData.PropertiesValueStruct>(feature->PropertyCount);
@@ -272,20 +277,23 @@ public unsafe class DataFile : IDisposable
                             if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(value, out var convertedValue))
                             {
                                 Console.Write((int)convertedValue + '\n');
-                                propertiesValueStruct.PropertiesValues = convertedValue;
-                                propertiesValueStruct.name = "";
+                                MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct(convertedValue, "");
+                                //propertiesValueStruct.PropertiesValues = ;
+                                //propertiesValueStruct.name = "";
                                 properties.Add(convertedKey, propertiesValueStruct);
                             }
                             else if (value == "2")
                             {
-                                propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two;
-                                propertiesValueStruct.name = "";
+                                MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct(MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two, "");
+                                //propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.two;
+                                //propertiesValueStruct.name = "";
                                 properties.Add(convertedKey, propertiesValueStruct);
                             }
                             else if (value == "name")
                             {
-                                propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.none;
-                                propertiesValueStruct.name = value.ToString();
+                                MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct(MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.none, value.ToString());
+                                //propertiesValueStruct.PropertiesValues = MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.none;
+                                //propertiesValueStruct.name = value.ToString();
                                 properties.Add(convertedKey, propertiesValueStruct);
                             }
                             //else
