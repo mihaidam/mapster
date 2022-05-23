@@ -80,6 +80,7 @@ public readonly ref struct MapFeatureData
             construction = 10,
             military = 10,
             quarry = 10,
+            restaurant = 10,
             brownfield = 10,
             farm = 11,
             meadow = 11,
@@ -90,6 +91,7 @@ public readonly ref struct MapFeatureData
             allotments = 11,
             reservoir = 12,
             basin = 12,
+            yes = 1000,
             none = 1000
         };
 

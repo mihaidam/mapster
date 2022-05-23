@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MapFeatureGenerator": {
+      "commandName": "Project",
+      "commandLineArgs": "-i \"../../Tests/TestOSMDataReader/MapData/andorra-10032022.osm.pbf\" -o \"../../../andorra.bin\"",
+      "workingDirectory": "D:\\00Programare\\FacultateAN3\\00Sem2\\dot-net\\final-proj\\DataPipeline\\MapFeatureGenerator"
+    }
+  }
+}
