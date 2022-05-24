@@ -267,16 +267,16 @@ public unsafe class DataFile : IDisposable
                     {
                         GetProperty(header.Tile.Value.StringsOffsetInBytes, header.Tile.Value.CharactersOffsetInBytes, p * 2 + feature->PropertiesOffset, out var key, out var value);
 
-                        Console.Write(key.ToString() + "-v-");
+                        Console.WriteLine(key.ToString() + "-v-");
                         Enum.TryParse(value.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
-                        if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+                        if (myStatus != 0)
                             Console.WriteLine(myStatus);
 
                         if (Enum.TryParse<MapFeatureData.PropertiesKeysEnum>(key, out var convertedKey))
                         {
                             if (Enum.TryParse<MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum>(value, out var convertedValue))
                             {
-                                Console.Write((int)convertedValue + '\n');
+                                //Console.Write((int)convertedValue + '\n');
                                 MapFeatureData.PropertiesValueStruct propertiesValueStruct = new MapFeatureData.PropertiesValueStruct(convertedValue, "");
                                 //propertiesValueStruct.PropertiesValues = ;
                                 //propertiesValueStruct.name = "";

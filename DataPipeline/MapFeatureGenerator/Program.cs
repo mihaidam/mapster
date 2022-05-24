@@ -294,11 +294,10 @@ public static class Program
                     }
                     foreach (var val in featureData.PropertyValues.values)
                     {
-                        Enum.TryParse(val.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
-                        if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
-                            Console.WriteLine("---" + myStatus.ToString());
-                        else
-                            Console.WriteLine("---" + (int)myStatus);
+                        //Console.WriteLine(val.PropertiesValues.ToString());
+                        //Enum.TryParse(val.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
+                        //if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+                        //    Console.WriteLine("---" + myStatus.ToString());
                     }
                 }
 
@@ -783,11 +782,22 @@ public static class Program
                 for (var i = 0; i < featureData.PropertyKeys.keys.Count; ++i)
                 {
                     ReadOnlySpan<char> k = Convert.ToString(featureData.PropertyKeys.keys[i]);
-                    ReadOnlySpan<char> v = Convert.ToString(featureData.PropertyValues.values[i]);
 
-                    Enum.TryParse(v.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
-                    if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
-                        Console.WriteLine(k.ToString() + "---" + myStatus.ToString());
+                    ReadOnlySpan<char> v;
+
+                    if (featureData.PropertyValues.values[i].name == "")
+                    {
+                        v = featureData.PropertyValues.values[i].PropertiesValues.ToString();
+                    }
+                    else
+                    {
+                        v = featureData.PropertyValues.values[i].name.ToString();
+                    }
+
+                    //Enum.TryParse(v.ToString(), out MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum myStatus);
+                    //Console.WriteLine(featureData.PropertyValues.values[i].PropertiesValues.ToString());
+                    //if (myStatus != MapFeatureData.PropertiesValueStruct.PropertiesValuesEnum.wetland)
+                    //    Console.WriteLine(k.ToString() + "---" + myStatus.ToString());
 
                     fileWriter.Write(stringOffset); // StringEntry: Offset
                     fileWriter.Write(k.Length); // StringEntry: Length
@@ -818,7 +828,16 @@ public static class Program
                         fileWriter.Write((short)c);
                     }
 
-                    ReadOnlySpan<char> v = Convert.ToString(featureData.PropertyValues.values[i]);
+                    ReadOnlySpan<char> v;
+
+                    if (featureData.PropertyValues.values[i].name == "")
+                    {
+                        v = featureData.PropertyValues.values[i].PropertiesValues.ToString();
+                    }
+                    else
+                    {
+                        v = featureData.PropertyValues.values[i].name.ToString();
+                    }
                     foreach (var c in v)
                     {
                         fileWriter.Write((short)c);
